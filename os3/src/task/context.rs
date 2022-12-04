@@ -15,13 +15,13 @@ impl TaskContext {
         }
     }
 
-    pub fn goto_restore(kernelStask_ptr: usize) -> Self {
+    pub fn goto_restore(kstask_ptr: usize) -> Self {
         extern "C" {
             fn __restore();
         }
         Self {
             ra: __restore as usize,
-            sp: kernelStask_ptr,
+            sp: kstask_ptr,
             s: [0; 12]
         }
     }

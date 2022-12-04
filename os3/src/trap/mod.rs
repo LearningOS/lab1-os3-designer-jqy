@@ -10,7 +10,7 @@ use riscv::register::{
     sie, stval, stvec,
 };
 
-use self::context::TrapContext;
+pub use context::TrapContext;
 
 core::arch::global_asm!(include_str!("trap.S"));
 
@@ -48,7 +48,7 @@ pub fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
             cx.x[10] = syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
         }
         Trap::Exception(Exception::StoreFault) | Trap::Exception(Exception::StorePageFault) => {
-            error!("[kernel] PageFault in applicationm, bad addr = {:#x}, bad instruction = {:#x}, core dumped.", stvec, cx.sepc);
+            error!("[kernel] PageFault in applicationm, bad addr = {:#x}, bad instruction = {:#x}, core dumped.", stval, cx.sepc);
             exit_current_and_run_next();
         }
         Trap::Exception(Exception::IllegalInstruction) => {

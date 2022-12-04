@@ -1,10 +1,11 @@
-use self::manager::TASK_MANAGER;
-
 mod context;
 mod switch;
 mod manager;
 #[allow(clippy::module_inception)]
 mod task;
+use manager::*;
+pub use switch::__switch;
+pub use task::{TaskControlBlock, TaskStatus};
 
 
 pub fn run_first_task() {

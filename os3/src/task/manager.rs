@@ -29,14 +29,14 @@ lazy_static! {
             t.task_cx = TaskContext::goto_restore(init_app_cx(i));
             t.task_status = TaskStatus::Ready;
         }
-        TaslManager {
+        TaskManager {
             num_app,
             inner: unsafe {
                 UPSafeCell::new(TaskManagerInner {
                     tasks,
                     current_task: 0,
                 })
-            }
+            },
         }
     };
 }
@@ -57,19 +57,21 @@ impl TaskManager {
 
     pub fn mark_current_suspended(&self) {
         let mut inner = self.inner.exclusive_access();
-        inner.tasks[inner.current_task].task_status = TaskStatus::Ready;
+        let current = inner.current_task;
+        inner.tasks[current].task_status = TaskStatus::Ready;
     }
 
     pub fn mark_current_exited(&self) {
         let mut inner = self.inner.exclusive_access();
-        inner.tasks[inner.current_task].task_status = TaskStatus::Exited;
+        let current = inner.current_task;
+        inner.tasks[current].task_status = TaskStatus::Exited;
     }
 
     pub fn find_next_task(&self) -> Option<usize> {
         let inner = self.inner.exclusive_access();
         let current = inner.current_task;
         ((current + 1) .. (current + self.num_app + 1))
-        .map(|v| v % id.num_app)
+        .map(|v| v % self.num_app)
         .find(|id| inner.tasks[*id].task_status == TaskStatus::Ready)
     }
 
@@ -80,7 +82,7 @@ impl TaskManager {
             inner.tasks[next].task_status = TaskStatus::Running;
             inner.current_task = next;
             let current_task_cx_ptr = &mut inner.tasks[current].task_cx as *mut TaskContext;
-            let next_task_cx_ptr = inner.tasks[next].task_cx as *const TaskContext;
+            let next_task_cx_ptr = &inner.tasks[next].task_cx as *const TaskContext;
             drop(inner);
             unsafe {
                 __switch(current_task_cx_ptr, next_task_cx_ptr);
