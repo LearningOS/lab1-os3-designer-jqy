@@ -1,4 +1,4 @@
-use crate::config::{MAX_APP_NUM, MAX_SYSCALL_NUM};
+use crate::config::MAX_SYSCALL_NUM;
 use crate::task::{suspend_current_and_run_next, exit_current_and_run_next, TaskStatus};
 use crate::timer::get_time_us;
 
